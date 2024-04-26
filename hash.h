@@ -23,24 +23,29 @@ struct MyStringHash {
         unsigned long long wValues[5] = {0, 0, 0, 0, 0};
         int segmentLength = 6;
         int numSegments = (k.length() + segmentLength - 1) / segmentLength;
+        unsigned long long segmentValue = 0;
+        unsigned long long basePower = 1;
+        unsigned long long hashValue = 0;
+        unsigned long long value;
+        char c;
+        
 
         for (int segment = 0; segment < numSegments; segment++) {
             int startIdx = k.length() - segment * segmentLength - 1;
             int endIdx = std::max((int)k.length() - (segment + 1) * segmentLength, 0);
-            unsigned long long segmentValue = 0;
-            unsigned long long basePower = 1;
+            segmentValue = 0;
+            basePower = 1;
 
             for (int idx = startIdx; idx >= endIdx; idx--) {
-                char c = k[idx];
-                unsigned long long value = letterDigitToNumber(c);
+                c = k[idx];
+                value = letterDigitToNumber(c);
                 segmentValue += value * basePower;
                 basePower *= 36;
             }
             wValues[4 - segment] = segmentValue;
         }
 
-        unsigned long long hashValue = 0;
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 5; i++) {
             hashValue += rValues[i] * wValues[i];
         }
         return hashValue;

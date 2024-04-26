@@ -347,27 +347,27 @@ void HashTable<K,V,Prober,Hash,KEqual>::insert(const ItemType& p)
     HASH_INDEX_T h = this->probe(p.first);
     bool add = false;
 
-    if((h == npos)){
+    if((h != npos)){
+        if(table_[h] == nullptr) {
+            table_[h] = new HashItem(p);
+            add = true;
+        } else if (table_[h] -> deleted){
+            table_[h]->deleted = !(table_[h]->deleted);
+            table_[h]->item = p;
+            add = true;    
+        } else {
+            table_[h] -> item = p;
+        }
+
+        if(add == true){
+            Pnum_++;
+            PtotalNum_++;
+            add = false;
+        }
+    }else{
         throw std::logic_error("no more space to insert");
     }
     
-    if(table_[h] == nullptr) {
-        table_[h] = new HashItem(p);
-        add = true;
-    } else if (table_[h] -> deleted){
-        table_[h]->deleted = !(table_[h]->deleted);
-        table_[h]->item = p;
-        add = true;    
-    } else {
-        table_[h] -> item = p;
-    }
-
-    if(add == true){
-        Pnum_++;
-        PtotalNum_++;
-        add = false;
-    }
-
     
 }
 
@@ -457,10 +457,10 @@ typename HashTable<K,V,Prober,Hash,KEqual>::HashItem* HashTable<K,V,Prober,Hash,
 template<typename K, typename V, typename Prober, typename Hash, typename KEqual>
 void HashTable<K,V,Prober,Hash,KEqual>::resize()
 {
-    HASH_INDEX_T new_size = CAPACITIES[mIndex_ + 1];
-    HASH_INDEX_T h;
     mIndex_++;
-
+    HASH_INDEX_T new_size = CAPACITIES[mIndex_];
+    HASH_INDEX_T h;
+    
     std::vector<HashItem*> new_table;
     std::vector<HashItem*> tableS = table_;
 
@@ -473,10 +473,9 @@ void HashTable<K,V,Prober,Hash,KEqual>::resize()
             if(!tableS[i]->deleted){
                 h = this->probe(tableS[i]->item.first);
                 table_[h] = tableS[i];
-            }else if (tableS[i]->deleted){
+            }else{
                 delete tableS[i];
             }
-            
         }
     }
 
